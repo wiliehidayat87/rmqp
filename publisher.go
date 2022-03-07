@@ -30,7 +30,7 @@ func (rabbit *AMQP) IntegratePublish(exch string, queue string, contentType stri
 	if err != nil {
 		fmt.Printf("[x] Failed published: %s, Data: %s ...\n", correlationId, requestBody)
 	} else {
-		fmt.Printf("[v] Published: %s, Data: %s ...", correlationId, requestBody)
+		fmt.Printf("[v] Published: %s, Data: %s ...\n", correlationId, requestBody)
 	}
 
 }
