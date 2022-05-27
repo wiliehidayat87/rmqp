@@ -10,7 +10,7 @@ import (
 )
 
 // IntegratePublish : publish a message
-func (rabbit *AMQP) IntegratePublish(exch string, queue string, contentType string, correlationId string, requestBody string) {
+func (rabbit *AMQP) IntegratePublish(exch string, queue string, contentType string, correlationId string, requestBody string) bool {
 
 	err := rabbit.Channel.Publish(
 		exch,  // exchange name
@@ -29,8 +29,13 @@ func (rabbit *AMQP) IntegratePublish(exch string, queue string, contentType stri
 
 	if err != nil {
 		fmt.Printf("[x] Failed published: %s, Data: %s ...\n", correlationId, requestBody)
+
+		return false
+
 	} else {
 		fmt.Printf("[v] Published: %s, Data: %s ...\n", correlationId, requestBody)
+
+		return true
 	}
 
 }
