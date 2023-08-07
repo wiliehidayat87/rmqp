@@ -21,6 +21,15 @@ type (
 		ErrQueue     error
 		ExchangeName string
 	}
+
+	PublishItems struct {
+		ExchangeName string
+		QueueName    string
+		ContentType  string
+		Priority     uint8
+		CorId        string
+		Payload      string
+	}
 )
 
 // SetAmqpURL : Build an AMQP URL via config
