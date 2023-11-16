@@ -5,6 +5,9 @@ package rmqp
 
 import (
 	"fmt"
+	"log"
+	"math"
+	"time"
 
 	"github.com/streadway/amqp"
 )
@@ -84,6 +87,37 @@ func (rabbit *AMQP) SetUpConnectionAmqp() {
 		// Set into global interface connection of amqp
 		rabbit.Connection = amqpConn
 	}
+}
+
+func (rabbit *AMQP) SetupConnectionAmqpAndReconnect() {
+	var counts int64
+	var backOff = 1 * time.Second
+	var connection *amqp.Connection
+
+	// don't continue until rabbit is ready
+	for {
+		c, err := amqp.Dial(rabbit.MsgBrokerURL)
+
+		if err != nil {
+			log.Println("RabbitMQ not yet ready...")
+			counts++
+		} else {
+			log.Println("Connected to RabbitMQ!")
+			connection = c
+			break
+		}
+
+		if counts > 5 {
+			log.Println(err)
+		}
+
+		backOff = time.Duration(math.Pow(float64(counts), 2)) * time.Second
+		log.Println("backing off...")
+		time.Sleep(backOff)
+		continue
+	}
+
+	rabbit.Connection = connection
 }
 
 // SetUpOnceChannel : Setup the once channel of related connection
