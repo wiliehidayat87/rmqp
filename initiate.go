@@ -89,7 +89,7 @@ func (rabbit *AMQP) SetUpConnectionAmqp() {
 	}
 }
 
-func (rabbit *AMQP) SetupConnectionAmqpAndReconnect() {
+func (rabbit *AMQP) SetupConnectionAmqpAndReconnect() error {
 	var counts int64
 	var backOff = 1 * time.Second
 	var connection *amqp.Connection
@@ -109,6 +109,7 @@ func (rabbit *AMQP) SetupConnectionAmqpAndReconnect() {
 
 		if counts > 5 {
 			log.Println(err)
+			return err
 		}
 
 		backOff = time.Duration(math.Pow(float64(counts), 2)) * time.Second
@@ -118,6 +119,7 @@ func (rabbit *AMQP) SetupConnectionAmqpAndReconnect() {
 	}
 
 	rabbit.Connection = connection
+	return nil
 }
 
 // SetUpOnceChannel : Setup the once channel of related connection
