@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"math"
+	"net"
 	"time"
 
 	"github.com/streadway/amqp"
@@ -86,6 +87,38 @@ func (rabbit *AMQP) SetUpConnectionAmqp() {
 
 		// Set into global interface connection of amqp
 		rabbit.Connection = amqpConn
+	}
+}
+
+// SetUpConnectionAmqp : Setup and initiation of dailing of the connection
+// this will handle AMQP connection and channel of themself
+// param :
+// 1. @rabbitURL ( Rabbit URL of the connection string ) -> string
+// returns :
+// 1. @Conn ( Connection struct compiler consist of Connection & Channel of AMQP ) -> struct interface
+// 2. @error ( Related error ) -> error
+func (rabbit *AMQP) SetUpConnectionAmqpV2() {
+	var err error
+
+	defer func() {
+		if e := recover(); e != nil {
+			fmt.Printf("[x] Failed Initializing Broker Connection : %#v", e)
+		}
+
+	}()
+
+	timeout := time.Duration(600)
+	// create an AMQP configuration with specific timers
+	var dialConfig amqp.Config
+	dialConfig.Heartbeat = timeout
+	dialConfig.Dial = func(network, addr string) (net.Conn, error) {
+		return net.DialTimeout(network, addr, timeout)
+	}
+
+	// Setup the AMQP broker connection
+	rabbit.Connection, err = amqp.DialConfig(rabbit.MsgBrokerURL, dialConfig)
+	if err != nil {
+		panic(err)
 	}
 }
 
