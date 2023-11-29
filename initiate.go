@@ -98,14 +98,17 @@ func (rabbit *AMQP) SetUpConnectionAmqp() {
 // 1. @Conn ( Connection struct compiler consist of Connection & Channel of AMQP ) -> struct interface
 // 2. @error ( Related error ) -> error
 func (rabbit *AMQP) SetUpConnectionAmqpV2() {
-	var err error
 
-	defer func() {
-		if e := recover(); e != nil {
-			fmt.Printf("[x] Failed Initializing Broker Connection : %#v", e)
-		}
+	/*
+		var err error
 
-	}()
+			defer func() {
+				if e := recover(); e != nil {
+					fmt.Printf("[x] Failed Initializing Broker Connection : %#v", e)
+				}
+
+			}()
+	*/
 
 	timeout := time.Duration(600)
 	// create an AMQP configuration with specific timers
@@ -116,9 +119,32 @@ func (rabbit *AMQP) SetUpConnectionAmqpV2() {
 	}
 
 	// Setup the AMQP broker connection
-	rabbit.Connection, err = amqp.DialConfig(rabbit.MsgBrokerURL, dialConfig)
-	if err != nil {
-		panic(err)
+	amqpConn, errConn := amqp.DialConfig(rabbit.MsgBrokerURL, dialConfig)
+
+	// Checking of the AMQP connection
+
+	if errConn != nil {
+
+		// Write the log if the connection is not connected
+		fmt.Printf("[x] Failed Initializing Broker Connection : %#v", errConn)
+
+		// Defer the AMQP related connection then close
+		// although the connection is not established
+		defer amqpConn.Close()
+
+		// Return to method requestor when error occured
+		rabbit.ErrConn = errConn
+
+		panic(errConn)
+
+	} else {
+
+		// Just write the related connection
+		// when established
+		fmt.Println("[v] Success Initializing Broker Connection")
+
+		// Set into global interface connection of amqp
+		rabbit.Connection = amqpConn
 	}
 }
 
