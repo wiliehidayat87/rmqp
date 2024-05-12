@@ -40,7 +40,12 @@ type (
 // param : nil
 // return :
 // 1. @URL ( Connection string of AMQP for dailing ) -> string
-func (rabbit *AMQP) SetAmqpURL(host string, port int, uname string, pwd string) {
+func (rabbit *AMQP) SetAmqpURL(host string, port int, uname string, pwd string, vhost string) {
+
+	vHost := "/"
+	if vhost != "" {
+		vHost = vhost
+	}
 
 	rabbit.MsgBrokerURL = amqp.URI{
 		Scheme:   "amqp",
@@ -48,7 +53,7 @@ func (rabbit *AMQP) SetAmqpURL(host string, port int, uname string, pwd string) 
 		Port:     port,
 		Username: uname,
 		Password: pwd,
-		Vhost:    "/",
+		Vhost:    vHost,
 	}.String()
 }
 
