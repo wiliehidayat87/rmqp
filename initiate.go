@@ -64,7 +64,7 @@ func (rabbit *AMQP) SetAmqpURL(host string, port int, uname string, pwd string, 
 // returns :
 // 1. @Conn ( Connection struct compiler consist of Connection & Channel of AMQP ) -> struct interface
 // 2. @error ( Related error ) -> error
-func (rabbit *AMQP) SetUpConnectionAmqp() {
+func (rabbit *AMQP) SetUpConnectionAmqp() error {
 
 	// This function should handle the
 	// connection init of AMQP
@@ -84,6 +84,8 @@ func (rabbit *AMQP) SetUpConnectionAmqp() {
 		// Return to method requestor when error occured
 		rabbit.ErrConn = errConn
 
+		return errConn
+
 	} else {
 
 		// Just write the related connection
@@ -92,6 +94,8 @@ func (rabbit *AMQP) SetUpConnectionAmqp() {
 
 		// Set into global interface connection of amqp
 		rabbit.Connection = amqpConn
+
+		return nil
 	}
 }
 
@@ -280,7 +284,7 @@ func SetUpOnceChannel(rabbit *amqp.Connection, exchType string, exchDurable bool
 // 4. @queueName ( Queue AMQP Name ) -> string
 // Return :
 // 1. @Chn ( Struct ) -> struct interface
-func (rabbit *AMQP) SetUpChannel(exchType string, exchDurable bool, exchName string, queueDurable bool, queueName string) {
+func (rabbit *AMQP) SetUpChannel(exchType string, exchDurable bool, exchName string, queueDurable bool, queueName string) error {
 
 	// This is a channel after the connection
 	// is established, then initiate the AMQP Channel
@@ -299,6 +303,8 @@ func (rabbit *AMQP) SetUpChannel(exchType string, exchDurable bool, exchName str
 
 		// Assign error channel
 		rabbit.ErrChannel = errCh
+
+		return errCh
 
 	} else {
 
@@ -327,6 +333,8 @@ func (rabbit *AMQP) SetUpChannel(exchType string, exchDurable bool, exchName str
 
 		// Write the log if exchange is error
 		fmt.Printf("[x] Failed to declare a exchange : %#v\n", errExch)
+
+		return errExch
 
 	} else {
 
@@ -384,12 +392,16 @@ func (rabbit *AMQP) SetUpChannel(exchType string, exchDurable bool, exchName str
 		// Assign failed channel
 		rabbit.ErrQueue = errQueue
 
+		return errQueue
+
 	} else {
 
 		// Write the log if the queue declare is successful
 		fmt.Printf("[v] Success declaring a queue worker : %s\n", q.Name)
 
 		rabbit.Queue = &q
+
+		return nil
 	}
 
 }

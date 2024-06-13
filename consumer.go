@@ -7,7 +7,7 @@ import (
 )
 
 // Subscribe : consuming a message
-func (rabbit *AMQP) Subscribe(qos int, autoAck bool, routingKey string, exchName string, queueName string) <-chan amqp.Delivery {
+func (rabbit *AMQP) Subscribe(qos int, autoAck bool, routingKey string, exchName string, queueName string) (<-chan amqp.Delivery, error) {
 
 	// Set config for basic QOS
 	// (Size transaction fetch per 1 minute)
@@ -78,11 +78,11 @@ func (rabbit *AMQP) Subscribe(qos int, autoAck bool, routingKey string, exchName
 		// Closing connection
 		defer rabbit.Connection.Close()
 
-		panic(errConsumeChannel)
+		return messagesData, errConsumeChannel
 
 	}
 
 	fmt.Println("[v] Success to register a consumer")
 
-	return messagesData
+	return messagesData, nil
 }
