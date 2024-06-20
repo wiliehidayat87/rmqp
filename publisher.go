@@ -4,8 +4,6 @@ package rmqp
 // and handle of any create connection of Rabbit MQ Framework
 
 import (
-	"fmt"
-
 	"github.com/streadway/amqp"
 )
 
@@ -28,12 +26,12 @@ func (rabbit *AMQP) IntegratePublish(exch string, queue string, contentType stri
 	//input := Lib.ReduceWords(requestBody, 0, 30)
 
 	if err != nil {
-		fmt.Printf("[x] Failed published: %s, Data: %s ...\n", correlationId, requestBody)
+		//fmt.Printf("[x] Failed published: %s, Data: %s ...\n", correlationId, requestBody)
 
 		return false
 
 	} else {
-		fmt.Printf("[v] Published: %s, Data: %s ...\n", correlationId, requestBody)
+		//fmt.Printf("[v] Published: %s, Data: %s ...\n", correlationId, requestBody)
 
 		return true
 	}
@@ -60,12 +58,12 @@ func (rabbit *AMQP) PublishMsg(pi PublishItems) bool {
 	//input := Lib.ReduceWords(requestBody, 0, 30)
 
 	if err != nil {
-		fmt.Printf("[x] Failed published: %s, Data: %s ...\n", pi.CorId, pi.Payload)
+		//fmt.Printf("[x] Failed published: %s, Data: %s ...\n", pi.CorId, pi.Payload)
 
 		return false
 
 	} else {
-		fmt.Printf("[v] Published: %s, Data: %s ...\n", pi.CorId, pi.Payload)
+		//fmt.Printf("[v] Published: %s, Data: %s ...\n", pi.CorId, pi.Payload)
 
 		return true
 	}
