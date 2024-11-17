@@ -10,7 +10,8 @@ import (
 	"net"
 	"time"
 
-	"github.com/streadway/amqp"
+	//"github.com/streadway/amqp"
+	amqp "github.com/rabbitmq/amqp091-go"
 )
 
 // Initiate a struct of a connection

@@ -4,7 +4,8 @@ package rmqp
 // and handle of any create connection of Rabbit MQ Framework
 
 import (
-	"github.com/streadway/amqp"
+	//"github.com/streadway/amqp"
+	amqp "github.com/rabbitmq/amqp091-go"
 )
 
 // IntegratePublish : publish a message

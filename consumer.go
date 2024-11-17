@@ -3,7 +3,8 @@ package rmqp
 import (
 	"fmt"
 
-	"github.com/streadway/amqp"
+	//"github.com/streadway/amqp"
+	amqp "github.com/rabbitmq/amqp091-go"
 )
 
 // Subscribe : consuming a message
