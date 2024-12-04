@@ -7,9 +7,11 @@ import (
 	"fmt"
 	"log"
 	"math"
+	"net"
 	"time"
 
-	"github.com/streadway/amqp"
+	//"github.com/streadway/amqp"
+	amqp "github.com/rabbitmq/amqp091-go"
 )
 
 // Initiate a struct of a connection
@@ -39,7 +41,12 @@ type (
 // param : nil
 // return :
 // 1. @URL ( Connection string of AMQP for dailing ) -> string
-func (rabbit *AMQP) SetAmqpURL(host string, port int, uname string, pwd string) {
+func (rabbit *AMQP) SetAmqpURL(host string, port int, uname string, pwd string, vhost string) {
+
+	vHost := "/"
+	if vhost != "" {
+		vHost = vhost
+	}
 
 	rabbit.MsgBrokerURL = amqp.URI{
 		Scheme:   "amqp",
@@ -47,7 +54,7 @@ func (rabbit *AMQP) SetAmqpURL(host string, port int, uname string, pwd string) 
 		Port:     port,
 		Username: uname,
 		Password: pwd,
-		Vhost:    "/",
+		Vhost:    vHost,
 	}.String()
 }
 
@@ -58,7 +65,7 @@ func (rabbit *AMQP) SetAmqpURL(host string, port int, uname string, pwd string) 
 // returns :
 // 1. @Conn ( Connection struct compiler consist of Connection & Channel of AMQP ) -> struct interface
 // 2. @error ( Related error ) -> error
-func (rabbit *AMQP) SetUpConnectionAmqp() {
+func (rabbit *AMQP) SetUpConnectionAmqp() error {
 
 	// This function should handle the
 	// connection init of AMQP
@@ -77,6 +84,68 @@ func (rabbit *AMQP) SetUpConnectionAmqp() {
 
 		// Return to method requestor when error occured
 		rabbit.ErrConn = errConn
+
+		return errConn
+
+	} else {
+
+		// Just write the related connection
+		// when established
+		fmt.Println("[v] Success Initializing Broker Connection")
+
+		// Set into global interface connection of amqp
+		rabbit.Connection = amqpConn
+
+		return nil
+	}
+}
+
+// SetUpConnectionAmqp : Setup and initiation of dailing of the connection
+// this will handle AMQP connection and channel of themself
+// param :
+// 1. @rabbitURL ( Rabbit URL of the connection string ) -> string
+// returns :
+// 1. @Conn ( Connection struct compiler consist of Connection & Channel of AMQP ) -> struct interface
+// 2. @error ( Related error ) -> error
+func (rabbit *AMQP) SetUpConnectionAmqpV2() {
+
+	/*
+		var err error
+
+			defer func() {
+				if e := recover(); e != nil {
+					fmt.Printf("[x] Failed Initializing Broker Connection : %#v", e)
+				}
+
+			}()
+	*/
+
+	timeout := time.Duration(600)
+	// create an AMQP configuration with specific timers
+	var dialConfig amqp.Config
+	dialConfig.Heartbeat = timeout
+	dialConfig.Dial = func(network, addr string) (net.Conn, error) {
+		return net.DialTimeout(network, addr, timeout)
+	}
+
+	// Setup the AMQP broker connection
+	amqpConn, errConn := amqp.DialConfig(rabbit.MsgBrokerURL, dialConfig)
+
+	// Checking of the AMQP connection
+
+	if errConn != nil {
+
+		// Write the log if the connection is not connected
+		fmt.Printf("[x] Failed Initializing Broker Connection : %#v", errConn)
+
+		// Defer the AMQP related connection then close
+		// although the connection is not established
+		defer amqpConn.Close()
+
+		// Return to method requestor when error occured
+		rabbit.ErrConn = errConn
+
+		panic(errConn)
 
 	} else {
 
@@ -216,7 +285,7 @@ func SetUpOnceChannel(rabbit *amqp.Connection, exchType string, exchDurable bool
 // 4. @queueName ( Queue AMQP Name ) -> string
 // Return :
 // 1. @Chn ( Struct ) -> struct interface
-func (rabbit *AMQP) SetUpChannel(exchType string, exchDurable bool, exchName string, queueDurable bool, queueName string) {
+func (rabbit *AMQP) SetUpChannel(exchType string, exchDurable bool, exchName string, queueDurable bool, queueName string) error {
 
 	// This is a channel after the connection
 	// is established, then initiate the AMQP Channel
@@ -235,6 +304,8 @@ func (rabbit *AMQP) SetUpChannel(exchType string, exchDurable bool, exchName str
 
 		// Assign error channel
 		rabbit.ErrChannel = errCh
+
+		return errCh
 
 	} else {
 
@@ -263,6 +334,8 @@ func (rabbit *AMQP) SetUpChannel(exchType string, exchDurable bool, exchName str
 
 		// Write the log if exchange is error
 		fmt.Printf("[x] Failed to declare a exchange : %#v\n", errExch)
+
+		return errExch
 
 	} else {
 
@@ -320,12 +393,16 @@ func (rabbit *AMQP) SetUpChannel(exchType string, exchDurable bool, exchName str
 		// Assign failed channel
 		rabbit.ErrQueue = errQueue
 
+		return errQueue
+
 	} else {
 
 		// Write the log if the queue declare is successful
 		fmt.Printf("[v] Success declaring a queue worker : %s\n", q.Name)
 
 		rabbit.Queue = &q
+
+		return nil
 	}
 
 }
